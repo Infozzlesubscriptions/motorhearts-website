@@ -29,7 +29,7 @@ export default function BrandConcepts() {
     <header className="mb-12 mt-12 max-w-3xl">
       <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.25em] text-primary">Brand direction · concept studies</p>
       <h1 className="font-display text-4xl font-bold leading-tight tracking-tight sm:text-5xl">Three ways to feel<br />the road.</h1>
-      <p className="mt-5 text-base leading-7 text-muted-foreground">Three completely new steering-wheel identities. Each has a different typographic character and a matching favicon study. The current site logo and favicon have not been changed.</p>
+      <p className="mt-5 text-base leading-7 text-muted-foreground">Three steering-wheel identities, each with a different typographic character and a matching favicon study. Precision is the selected identity, now applied to the site logo and favicon.</p>
     </header>
     <div className="space-y-12">
       {concepts.map(concept => <section key={concept.id} aria-labelledby={`concept-${concept.id}`} className="overflow-hidden rounded-2xl border border-border">
@@ -62,8 +62,8 @@ export default function BrandConcepts() {
       </section>)}
     </div>
     <aside className="mt-12 rounded-2xl border border-border bg-card p-7 sm:p-9">
-      <h2 className="font-display text-2xl font-semibold">Which direction feels right?</h2>
-      <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">Tell me in the chat: <strong className="font-medium text-foreground">01 Precision</strong>, <strong className="font-medium text-foreground">02 Grand Tourer</strong>, or <strong className="font-medium text-foreground">03 Apex</strong>. You can also request a refinement before choosing. Once selected, the logo and its matching favicon can be applied together across the site.</p>
+      <h2 className="font-display text-2xl font-semibold">Selected: 01 Precision</h2>
+      <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">Precision and its matching favicon are now used across MotorHearts. The other studies remain here for reference. You can request a refinement or a different direction in the chat.</p>
     </aside>
   </main>;
 }

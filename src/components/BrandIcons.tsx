@@ -58,7 +58,7 @@ export default function BrandIcons() {
       });
       addIcon("icon", "image/x-icon", "16x16 32x32", ico);
     };
-    image.src = "/favicon.svg";
+    image.src = "/favicon.svg?v=precision";
     return () => {
       image.onload = null;
       links.forEach(link => link.remove());
