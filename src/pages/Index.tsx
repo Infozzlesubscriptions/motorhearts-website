@@ -65,10 +65,8 @@ export default function Index() {
                     className="mx-auto max-w-[1600px] px-5 pb-12 pt-7 sm:px-8 sm:pb-16 sm:pt-9 lg:px-12"
                     aria-label="Cover story">
                     <div
-                        className="mb-6 flex justify-between gap-3 border-b border-border pb-4 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                        <span>INDEPENDENT AUTOMOTIVE CULTURE</span>
-                        <span className="hidden sm:block">THE MACHINES. THE PEOPLE. THE PASSION.</span>
-                        <span className="shrink-0 sm:hidden">Vol. 01</span>
+                        className="mb-6 flex justify-end border-b border-border pb-4 text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:hidden">
+                        <span className="shrink-0">Vol. 01</span>
                     </div>
                     <div
                         className="grid overflow-hidden rounded-2xl border border-border bg-card lg:min-h-[590px] lg:grid-cols-[0.78fr_1.22fr]">
@@ -108,8 +106,6 @@ export default function Index() {
                             </div>
                         </Link>
                     </div>
-                    <p
-                        className="mt-5 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Considered journalism. Uncompromising passion.</p>
                 </section>
                 <section
                     className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-16"
