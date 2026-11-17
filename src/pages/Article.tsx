@@ -50,8 +50,8 @@ export default function Article() {
   return <>
     <SiteHeader />
     <main className="pt-[68px] sm:pt-20">
-      <article>
-        <header className="mx-auto max-w-5xl px-5 pb-10 pt-10 sm:px-8 sm:pb-14 sm:pt-16">
+      <article key={article.slug}>
+        <header className="article-intro mx-auto max-w-5xl px-5 pb-10 pt-10 sm:px-8 sm:pb-14 sm:pt-16">
           <Link to={`/category/${category?.slug}`} className="mb-9 inline-flex items-center gap-3 text-xs text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Back to {category?.name}</Link>
           <div className="mb-5 flex flex-wrap items-center gap-4 text-[10px] font-semibold uppercase tracking-[0.22em]">
             <Link to={`/category/${category?.slug}`} className="text-primary">{category?.name}</Link>
@@ -71,8 +71,12 @@ export default function Article() {
             <time dateTime={article.date} className="ml-auto text-xs text-muted-foreground">{dateLabel(article.date)}</time>
           </div>
         </header>
-        <figure className="mx-auto max-w-[1440px] px-5 sm:px-8">
-          <EditorialImage src={article.image} alt={article.title} priority sizes="(min-width: 1440px) 1376px, 100vw" width={1440} height={810} className="aspect-[4/3] w-full rounded-2xl object-cover sm:aspect-[21/10]" />
+        <figure className="mx-auto max-w-[1200px] px-5 sm:px-8">
+          <Reveal>
+            <div className="group overflow-hidden rounded-2xl">
+              <EditorialImage src={article.image} alt={article.title} priority sizes="(min-width: 1200px) 1136px, (min-width: 640px) calc(100vw - 64px), calc(100vw - 40px)" width={1200} height={675} className="aspect-[4/3] w-full object-cover sm:aspect-[21/10]" />
+            </div>
+          </Reveal>
         </figure>
         <div className="mx-auto max-w-3xl px-5 py-12 sm:px-8 sm:py-16">
           {article.specs.length > 0 && <Reveal className="mb-12">
@@ -84,7 +88,7 @@ export default function Article() {
           </Reveal>}
           <div className="space-y-7 font-serif text-lg leading-[1.85] text-foreground/85 sm:text-xl">
             {article.body.map((paragraph, index) => <div key={index}>
-              <p>{paragraph}</p>
+              <Reveal><p>{paragraph}</p></Reveal>
               {index === 1 && <Reveal><blockquote className="my-12 border-l-2 border-primary py-2 pl-7 font-display text-2xl font-semibold leading-snug text-foreground sm:text-3xl">“{article.pullQuote}”</blockquote></Reveal>}
             </div>)}
           </div>

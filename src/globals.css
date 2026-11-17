@@ -171,6 +171,18 @@
   to { opacity: 1; transform: translateX(0); }
 }
 
+@keyframes article-arrive {
+  from { opacity: 0.85; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.article-intro > h1 {
+  animation: article-arrive 520ms var(--motion-ease) both;
+}
+.article-intro > p {
+  animation: article-arrive 580ms var(--motion-ease) 80ms both;
+}
+
 @media (hover: hover) and (pointer: fine) {
   .group:hover .editorial-image { transform: scale(1.035); }
 }
