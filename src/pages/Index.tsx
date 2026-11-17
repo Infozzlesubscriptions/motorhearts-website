@@ -1,93 +1,79 @@
 import { useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { ArrowDown, ArrowUpRight, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import ArticleCard from "@/components/ArticleCard";
-import { articles, categories, getCategory } from "@/data/articles";
+import Newsletter from "@/components/Newsletter";
+import { dateLabel, useContent } from "@/lib/ContentContext";
 
-const Index = () => {
-  const [params, setParams] = useSearchParams();
-  const topic = params.get("topic");
-  const activeCategory = topic ? getCategory(topic) : undefined;
-  const visibleArticles = activeCategory ? articles.filter(a => a.category === topic) : articles.slice(1, 7);
-  const lead = articles[0];
-
+export default function Index() {
+  const { content } = useContent();
   useEffect(() => {
     document.title = "MotorHearts — For the love of the drive";
-    if (topic) {
-      const timer = setTimeout(() => document.getElementById("journal")?.scrollIntoView({ behavior: "smooth" }), 100);
-      return () => clearTimeout(timer);
-    }
-    if (!window.location.hash) window.scrollTo(0, 0);
-  }, [topic]);
+    window.scrollTo(0, 0);
+  }, []);
+  const byDate = [...content.articles].sort((first, second) => second.date.localeCompare(first.date));
+  const hero = content.articles.find(article => article.hero) ?? byDate[0];
+  const featured = content.articles.filter(article => article.featured).slice(0, 3);
+  const latest = byDate.slice(0, 4);
+  const spotlight = content.articles.find(article => article.spotlight) ?? byDate[0];
+  const guides = content.articles.filter(article => article.guide).slice(0, 3);
 
-  return (
-    <>
-      <SiteHeader />
-      <main className="pt-16 sm:pt-20">
-        <section className="mx-auto max-w-[1600px] px-5 pb-8 pt-8 sm:px-8 lg:px-12 lg:pb-12 lg:pt-10">
-          <div className="mb-7 flex items-center justify-between border-b border-border pb-5 text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground sm:text-[11px]">
-            <p className="flex items-center gap-2.5"><span className="h-1.5 w-1.5 rounded-full bg-primary" /> Independent automotive culture</p>
-            <p className="hidden sm:block">The machines. The people. The passion.</p>
-            <p className="sm:hidden">Vol. 01</p>
+  return <>
+    <SiteHeader />
+    <main className="pt-[68px] sm:pt-20">
+      <section className="mx-auto max-w-[1600px] px-5 pb-12 pt-7 sm:px-8 sm:pb-16 sm:pt-9 lg:px-12">
+        <div className="mb-6 flex justify-between border-b border-border pb-4 text-[10px] uppercase tracking-[0.2em] text-muted-foreground"><span>Independent automotive culture</span><span className="hidden sm:block">The machines. The people. The passion.</span><span className="sm:hidden">Vol. 01</span></div>
+        <div className="grid overflow-hidden rounded-2xl border border-border bg-card lg:min-h-[590px] lg:grid-cols-[0.78fr_1.22fr]">
+          <div className="flex flex-col justify-center px-7 py-12 sm:px-12 lg:px-14 xl:px-20">
+            <p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.24em] text-primary">MotorHearts journal · {content.categories.find(category => category.id === hero.categoryId)?.name}</p>
+            <h1 className="font-display text-[clamp(2.25rem,3.5vw,4.5rem)] font-extrabold leading-[1.06] tracking-[-0.045em]">{hero.title}</h1>
+            <p className="mt-7 max-w-md text-sm leading-7 text-muted-foreground sm:text-base">{hero.dek}</p>
+            <a href="#latest" className="mt-8 inline-flex w-fit items-center gap-6 rounded-full bg-foreground px-6 py-3.5 text-xs font-semibold text-background hover:bg-primary hover:text-white">Explore Articles <ArrowRight className="h-4 w-4" /></a>
           </div>
-          <div className="relative grid overflow-hidden rounded-2xl border border-border bg-card lg:min-h-[570px] lg:grid-cols-[0.85fr_1.15fr]">
-            <div className="relative z-10 flex flex-col justify-center px-7 py-12 sm:px-12 sm:py-16 lg:px-12 xl:px-16">
-              <p className="mb-7 flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground"><span className="h-px w-8 bg-primary" /> For the love of the drive</p>
-              <h1 className="font-display text-[clamp(2.7rem,6vw,6rem)] font-extrabold leading-[0.98] tracking-[-0.055em]">More than<br />machines.<br /><span className="text-primary">A feeling.</span></h1>
-              <p className="mt-7 max-w-sm text-sm leading-7 text-muted-foreground sm:text-base">Stories for those who hear more than an engine. Who see more than a road. Who feel it in their chest.</p>
-              <Link to={`/article/${lead.slug}`} className="mt-9 inline-flex w-fit items-center gap-7 rounded-full bg-foreground px-6 py-3.5 text-xs font-semibold text-background transition-colors hover:bg-primary hover:text-primary-foreground">Read the cover story <ArrowUpRight className="h-4 w-4" /></Link>
+          <Link to={`/article/${hero.slug}`} className="group relative block min-h-[350px] overflow-hidden sm:min-h-[470px] lg:min-h-full">
+            <img src={hero.image} alt={hero.title} fetchPriority="high" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.025]" />
+            <div className="absolute inset-x-5 bottom-5 rounded-xl border border-white/15 bg-background/90 p-5 backdrop-blur-sm sm:inset-x-7 sm:bottom-7 sm:p-7">
+              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">Cover story · {content.categories.find(category => category.id === hero.categoryId)?.name}</p>
+              <div className="flex items-end justify-between gap-4"><div className="min-w-0"><h2 className="break-words font-display text-xl font-bold leading-tight sm:text-3xl">{hero.title}</h2><p className="mt-2 break-words text-sm text-muted-foreground">{hero.dek}</p></div><ArrowUpRight className="h-5 w-5 shrink-0" /></div>
             </div>
-            <Link to={`/article/${lead.slug}`} className="group relative block min-h-[350px] overflow-hidden sm:min-h-[470px]" aria-label={lead.title}>
-              <img src={lead.image} alt="Silver Porsche sports car on a forest-lined mountain road" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover object-center motion-safe:animate-hero-zoom" />
-              <span className="absolute left-6 top-6 rounded-full bg-background/85 px-4 py-2 text-[10px] font-medium uppercase tracking-[0.2em] backdrop-blur-sm">The cover story · 01</span>
-              <div className="absolute bottom-5 left-5 right-5 rounded-xl border border-white/15 bg-background/85 p-5 backdrop-blur-lg sm:bottom-7 sm:left-7 sm:right-7 sm:p-7">
-                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-primary">Cars · 12 min read</p>
-                <div className="flex items-center justify-between gap-5"><h2 className="max-w-sm font-display text-xl font-bold leading-tight sm:text-2xl">Above the Clouds:<br />Three Alpine Passes in the New GT Coupé</h2><ArrowUpRight className="h-6 w-6 shrink-0 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" /></div>
-              </div>
-            </Link>
-          </div>
-          <div className="mt-7 flex items-center justify-between text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground"><p>Considered journalism. Uncompromising passion.</p><a href="#journal" className="flex items-center gap-3 transition-colors hover:text-foreground"><span className="hidden sm:inline">Explore the journal</span><ArrowDown className="h-4 w-4" /></a></div>
-        </section>
+          </Link>
+        </div>
+        <p className="mt-5 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">Considered journalism. Uncompromising passion.</p>
+      </section>
 
-        <section id="journal" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-12 sm:px-8 sm:py-16">
-          <div className="flex items-end justify-between gap-5">
-            <div><p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-primary">The Journal</p><h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">{activeCategory ? activeCategory.name : "Fresh from the road."}</h2></div>
-            <span className="hidden text-xs text-muted-foreground sm:block">Good stories. No shortcuts.</span>
-          </div>
-          <div className="no-scrollbar mb-9 mt-7 flex gap-2 overflow-x-auto border-b border-border pb-6">
-            <button onClick={() => setParams({})} className={`shrink-0 rounded-full border px-5 py-2.5 text-xs font-medium transition-colors ${!activeCategory ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:border-foreground/50 hover:text-foreground"}`}>All stories</button>
-            {categories.map(c => <button key={c.slug} onClick={() => setParams({ topic: c.slug })} className={`shrink-0 rounded-full border px-5 py-2.5 text-xs font-medium transition-colors ${topic === c.slug ? "border-foreground bg-foreground text-background" : "border-border text-muted-foreground hover:border-foreground/50 hover:text-foreground"}`}>{c.name}</button>)}
-          </div>
-          {activeCategory && <p className="mb-8 text-muted-foreground">{activeCategory.blurb}</p>}
-          <div className="grid gap-x-7 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
-            {visibleArticles.map(a => <ArticleCard key={a.slug} article={a} />)}
-          </div>
-        </section>
+      <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-14">
+        <div className="mb-8 flex items-end justify-between"><div><p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-primary">The edit</p><h2 className="font-display text-3xl font-bold sm:text-4xl">Featured stories.</h2></div><Link to="/articles" className="text-xs text-muted-foreground hover:text-primary">All stories →</Link></div>
+        {featured.length ? <div className="grid gap-9 lg:grid-cols-2"><ArticleCard article={featured[0]} size="large" /><div className="grid content-start gap-8">{featured.slice(1).map(article => <ArticleCard key={article.slug} article={article} size="compact" />)}</div></div> : <p className="text-muted-foreground">No featured stories selected yet.</p>}
+      </section>
 
-        <section className="mt-8 border-y border-border bg-card/40">
-          <div className="mx-auto grid max-w-7xl gap-8 px-5 py-16 sm:px-8 lg:grid-cols-[0.55fr_1fr] lg:gap-20 lg:py-20">
-            <div className="flex flex-col justify-between"><div><p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.25em] text-primary">The long read</p><h2 className="font-display text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl">Some things<br />only get better<br /><span className="font-serif font-normal italic text-muted-foreground">with time.</span></h2><p className="mt-6 max-w-sm text-sm leading-7 text-muted-foreground">Beyond the polished chrome, every classic holds a story. We go looking for the ones worth telling.</p></div><Link to={`/article/${articles[3].slug}`} className="mt-8 flex w-fit items-center gap-6 border-b border-foreground/30 pb-2 text-xs font-semibold transition-colors hover:text-primary">Discover the story <ArrowRight className="h-4 w-4" /></Link></div>
-            <Link to={`/article/${articles[3].slug}`} className="group relative block aspect-[16/10] overflow-hidden rounded-2xl"><img src={articles[3].image} alt="Vintage sports car with classic chrome detailing" loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" /><span className="absolute bottom-5 left-5 rounded-full bg-background/85 px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.15em] backdrop-blur-sm">Classic Cars · 14 min read</span></Link>
-          </div>
-        </section>
+      <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
+        <div className="mb-8"><p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-primary">Six worlds, one passion</p><h2 className="font-display text-3xl font-bold sm:text-4xl">Explore categories.</h2></div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{content.categories.map((category, index) => <Link key={category.id} to={`/category/${category.slug}`} className="group relative aspect-[16/10] overflow-hidden rounded-2xl bg-card"><img src={category.image} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover opacity-65 transition-transform duration-700 group-hover:scale-105" /><div className="absolute inset-0 bg-black/35" /><div className="absolute inset-x-5 bottom-5"><span className="text-[10px] uppercase tracking-[0.2em] text-white/75">0{index + 1}</span><h3 className="mt-1 font-display text-2xl font-bold">{category.name}</h3><p className="mt-1 line-clamp-2 text-sm text-white/75">{category.blurb}</p></div></Link>)}</div>
+      </section>
 
-        <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20">
-          <div className="mb-9 flex items-end justify-between"><div><p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-primary">Worth your time</p><h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">The editor's selection.</h2></div><span className="hidden text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:inline">Handpicked, not algorithmic</span></div>
-          <div className="grid gap-9 lg:grid-cols-3">{[articles[7], articles[4], articles[8]].map(a => <ArticleCard key={a.slug} article={a} />)}</div>
-        </section>
+      <section id="latest" className="scroll-mt-24 mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
+        <div className="mb-8 flex items-end justify-between"><div><p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-primary">Fresh from the road</p><h2 className="font-display text-3xl font-bold sm:text-4xl">Latest articles.</h2></div><Link to="/articles" className="text-xs text-muted-foreground hover:text-primary">View archive →</Link></div>
+        {latest.length ? <div className="grid gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">{latest.map(article => <ArticleCard key={article.slug} article={article} />)}</div> : <p className="text-muted-foreground">No stories are available yet.</p>}
+      </section>
 
-        <section id="about" className="mx-auto max-w-7xl scroll-mt-24 px-5 pb-20 sm:px-8 sm:pb-24">
-          <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-8 sm:p-14">
-            <div className="absolute bottom-0 left-0 top-0 w-1 bg-primary" />
-            <div className="grid items-center gap-8 lg:grid-cols-[1fr_0.7fr]"><div><p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.25em] text-primary">This is MotorHearts</p><h2 className="font-display text-3xl font-bold leading-tight tracking-tight sm:text-5xl">Not just what you drive.<br /><span className="font-serif font-normal italic text-muted-foreground">Why you drive.</span></h2></div><div className="space-y-4 text-sm leading-7 text-muted-foreground"><p>From the first twist of a throttle to the last mountain hairpin, we believe the best machines bring us closer to something human.</p><p>MotorHearts is an independent editorial showcase, exploring automotive culture through considered stories across six worlds. The articles in this first edition are illustrative sample features.</p><a href="#journal" className="inline-flex items-center gap-4 pt-2 text-xs font-semibold text-foreground transition-colors hover:text-primary">Find your next story <ArrowUpRight className="h-4 w-4" /></a></div></div>
-          </div>
-        </section>
-      </main>
-      <SiteFooter />
-    </>
-  );
-};
+      <section className="border-y border-border bg-card/40">
+        <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8 sm:py-16"><div className="mb-8 flex items-end justify-between"><div><p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-primary">Practical knowledge</p><h2 className="font-display text-3xl font-bold sm:text-4xl">Popular guides.</h2></div><Link to="/guides" className="text-xs text-muted-foreground hover:text-primary">All guides →</Link></div>
+          {guides.length ? <div className="grid gap-8 lg:grid-cols-3">{guides.map(article => <ArticleCard key={article.slug} article={article} />)}</div> : <p className="text-muted-foreground">New guides are on the way.</p>}
+        </div>
+      </section>
 
-export default Index;
+      <section className="mx-auto grid max-w-7xl gap-8 px-5 py-16 sm:px-8 lg:grid-cols-[0.7fr_1.3fr] lg:items-center lg:py-20">
+        <div><p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.25em] text-primary">The long read</p><h2 className="font-display text-4xl font-bold leading-tight sm:text-5xl">{spotlight.title}</h2><p className="mt-5 max-w-md text-sm leading-7 text-muted-foreground">{spotlight.dek}</p><Link to={`/article/${spotlight.slug}`} className="mt-7 inline-flex items-center gap-3 border-b border-foreground/30 pb-2 text-sm font-semibold">Discover the story <ArrowRight className="h-4 w-4" /></Link></div>
+        <Link to={`/article/${spotlight.slug}`} className="group relative aspect-[16/10] overflow-hidden rounded-2xl"><img src={spotlight.image} alt={spotlight.title} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" /><div className="absolute inset-x-3 bottom-3 max-h-[calc(100%-1.5rem)] overflow-y-auto rounded-xl border border-white/15 bg-background/90 p-3 backdrop-blur-sm sm:inset-x-5 sm:bottom-5 sm:p-4"><p className="break-words text-sm font-semibold leading-5">{spotlight.title}</p><p className="mt-1 break-words text-xs text-muted-foreground">{dateLabel(spotlight.date)}</p></div></Link>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8">
+        <div className="rounded-2xl border border-border bg-card p-8 sm:p-12"><p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">This is MotorHearts</p><h2 className="font-display text-3xl font-bold sm:text-4xl">Not just what you drive.<br /><span className="font-serif font-normal italic text-muted-foreground">Why you drive.</span></h2><p className="mt-5 max-w-2xl text-sm leading-7 text-muted-foreground">MotorHearts is an independent editorial showcase exploring automotive culture across six worlds. The sample features are illustrative.</p><Link to="/about" className="mt-5 inline-flex items-center gap-2 text-sm hover:text-primary">About MotorHearts <ArrowUpRight className="h-4 w-4" /></Link></div>
+      </section>
+      <Newsletter />
+    </main>
+    <SiteFooter />
+  </>;
+}
