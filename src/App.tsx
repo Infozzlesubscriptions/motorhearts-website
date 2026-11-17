@@ -10,9 +10,10 @@ import Editor from "./pages/Editor";
 import InfoPage from "./pages/InfoPages";
 import { ArticlesArchive, AuthorArchive, AuthorsIndex, CategoryArchive, GuidesArchive } from "./pages/Archives";
 import { ContentProvider } from "./lib/ContentContext";
+import BrandIcons from "./components/BrandIcons";
 
 const queryClient = new QueryClient();
-const App = () => <QueryClientProvider client={queryClient}><TooltipProvider><Toaster /><Sonner /><ContentProvider><BrowserRouter><Routes>
+const App = () => <QueryClientProvider client={queryClient}><TooltipProvider><BrandIcons /><Toaster /><Sonner /><ContentProvider><BrowserRouter><Routes>
   <Route path="/" element={<Index />} />
   <Route path="/article/:slug" element={<Article />} />
   <Route path="/category/:slug" element={<CategoryArchive />} />

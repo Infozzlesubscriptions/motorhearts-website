@@ -68,7 +68,7 @@ export default function SiteHeader() {
               <button aria-label="Open navigation menu" className="flex h-10 w-10 items-center justify-center rounded-full border border-border hover:border-foreground/40 hover:bg-secondary 2xl:hidden"><Menu className="h-4 w-4" /></button>
             </SheetTrigger>
             <SheetContent side="right" onCloseAutoFocus={event => { if (searchOpen) event.preventDefault(); }} className="mobile-menu w-full overflow-y-auto border-border bg-background px-7 pt-14 data-[state=closed]:duration-200 data-[state=open]:duration-300 sm:max-w-md">
-              <SheetTitle className="font-display text-2xl font-bold">The journal.</SheetTitle>
+              <SheetTitle className="font-display text-2xl font-bold"><Logo /></SheetTitle>
               <SheetDescription className="mb-8 mt-2 text-xs text-muted-foreground">Six worlds. One passion.</SheetDescription>
               <nav aria-label="Mobile navigation" className="flex flex-col gap-5">
                 {[...sections, { to: "/articles", name: "All articles" }, { to: "/authors", name: "Authors" }, { to: "/about", name: "About" }].map((section, index) => <NavLink
