@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { articles as samples, categories as categoryDefaults } from "@/data/articles";
-import { FALLBACK_IMAGE, loadWordPress } from "./wordpress";
+import { FALLBACK_IMAGE, loadWordPress, WORDPRESS_URL } from "./wordpress";
 
 export type Category = { id: string; slug: string; name: string; blurb: string; image: string };
 export type Author = { id: string; slug: string; name: string; role: string; bio: string; image: string };
@@ -29,7 +29,7 @@ const ContentContext = createContext<ContextValue | null>(null);
 export function ContentProvider({ children }: { children: ReactNode }) {
   const [signups, setSignups] = useState(loadSignups);
   const [storageError, setStorageError] = useState("");
-  const query = useQuery({ queryKey: ["motorhearts-wordpress"], queryFn: ({ signal }) => loadWordPress(signal), staleTime: 60000, refetchInterval: 300000, retry: 1, retryDelay: 1000 });
+  const query = useQuery({ queryKey: ["motorhearts-wordpress", WORDPRESS_URL], queryFn: ({ signal }) => loadWordPress(signal), staleTime: 60000, refetchInterval: 300000, retry: 1, retryDelay: 1000 });
   const save = (next: SiteContent) => {
     // Editorial writes belong to WordPress. Only the existing local newsletter demo is stored here.
     if (!next.signups.every(entry => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(entry.email) && entry.consent === true && Number.isFinite(Date.parse(entry.createdAt)))) throw new Error("Invalid local newsletter entry.");

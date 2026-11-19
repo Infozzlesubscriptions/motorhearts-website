@@ -2,12 +2,13 @@ import { z } from "zod";
 import type { Author, Category, SiteContent, Story } from "./ContentContext";
 import { categories as defaults, articles as samples } from "@/data/articles";
 
-export const WORDPRESS_URL = "https://motorhearts.testingweblink.com";
+export const WORDPRESS_URL = (import.meta.env.VITE_WORDPRESS_URL?.trim() || "https://motorhearts.testingweblink.com").replace(/\/+$/, "");
 export const WORDPRESS_ADMIN = `${WORDPRESS_URL}/wp-admin/`;
+export const WORDPRESS_REST_URL = `${WORDPRESS_URL}/wp-json/wp/v2`;
 export const FALLBACK_IMAGE = samples[0].image;
 export function imageUrl(value: unknown, fallback = FALLBACK_IMAGE): string {
   if (typeof value !== "string" || !value.trim()) return fallback;
-  try { const url = new URL(value, WORDPRESS_URL); return url.protocol === "https:" ? url.href : fallback; } catch { return fallback; }
+  try { const url = new URL(value, `${WORDPRESS_URL}/`); return url.protocol === "https:" ? url.href : fallback; } catch { return fallback; }
 }
 export function plainText(html: string): string {
   const document = new DOMParser().parseFromString(html, "text/html");
@@ -27,7 +28,8 @@ const postSchema = z.object({
 async function collection<S extends z.ZodTypeAny>(resource: string, schema: S, signal: AbortSignal): Promise<z.output<S>[]> {
   const result: z.output<S>[] = [];
   for (let page = 1; ; page++) {
-    const url = new URL(`${WORDPRESS_URL}/wp-json/wp/v2/${resource}`);
+    const url = new URL(`${WORDPRESS_REST_URL}/${resource}`);
+    if (url.protocol !== "https:" || url.username || url.password || url.hash) throw new Error("Set VITE_WORDPRESS_URL to the HTTPS WordPress installation URL without credentials or a fragment.");
     url.searchParams.set("per_page", "100");
     url.searchParams.set("page", String(page));
     url.searchParams.set("context", "view");

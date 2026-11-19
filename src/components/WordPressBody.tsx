@@ -17,10 +17,12 @@ function renderNode(node: Node, key: number, stories: Story[]): ReactNode {
   if (tag === "a") {
     const href = node.getAttribute("href") ?? "";
     try {
-      const url = new URL(href, WORDPRESS_URL);
+      const backend = new URL(`${WORDPRESS_URL}/`);
+      const url = new URL(href, backend);
       if (["https:", "mailto:", "tel:"].includes(url.protocol)) {
         const lastSegment = url.pathname.split("/").filter(Boolean).pop();
-        const story = url.origin === WORDPRESS_URL ? stories.find(article => article.slug === lastSegment || (url.searchParams.has("p") && article.wordpressId === Number(url.searchParams.get("p")))) : undefined;
+        const isBackend = url.origin === backend.origin && url.pathname.startsWith(backend.pathname);
+        const story = isBackend ? stories.find(article => article.slug === lastSegment || (url.searchParams.has("p") && article.wordpressId === Number(url.searchParams.get("p")))) : undefined;
         props.href = href.startsWith("#") ? href : story ? `/article/${story.slug}${url.hash}` : url.href;
       }
     } catch { /* An unsafe or malformed link remains plain text. */ }
