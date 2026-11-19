@@ -8,7 +8,7 @@ import { useContent } from "@/lib/ContentContext";
 import Logo from "./Logo";
 
 export default function SiteHeader() {
-  const { content } = useContent();
+  const { content, loading } = useContent();
   const [open, setOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -40,13 +40,13 @@ export default function SiteHeader() {
 
   const results = useMemo(() => {
     const term = query.trim().toLowerCase();
-    if (!term) return [];
+    if (!term || loading) return [];
     return content.articles.filter(article => {
       const category = content.categories.find(item => item.id === article.categoryId)?.name ?? "";
       const author = content.authors.find(item => item.id === article.authorId)?.name ?? "";
       return `${article.title} ${article.dek} ${category} ${author}`.toLowerCase().includes(term);
     }).slice(0, 8);
-  }, [content, query]);
+  }, [content, query, loading]);
 
   const sections = [
     { to: "/", name: "Home" },
@@ -91,7 +91,8 @@ export default function SiteHeader() {
           <button aria-label="Clear search" onClick={() => setQuery("")} className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
         </div>
         <div className="mt-3 max-h-[45dvh] space-y-2 overflow-y-auto">
-          {query.trim() && results.length === 0 && <p role="status" className="py-6 text-sm text-muted-foreground">No stories match that search. Try another term.</p>}
+          {loading && <p role="status" className="py-6 text-sm text-muted-foreground">Loading WordPress stories…</p>}
+          {!loading && query.trim() && results.length === 0 && <p role="status" className="py-6 text-sm text-muted-foreground">No stories match that search. Try another term.</p>}
           {results.map(article => <Link key={article.slug} onClick={() => setSearchOpen(false)} to={`/article/${article.slug}`} className="block rounded-xl border border-border p-4 hover:border-foreground/30 hover:bg-background">
             <span className="text-[10px] uppercase tracking-widest text-primary">{content.categories.find(category => category.id === article.categoryId)?.name}</span>
             <p className="mt-1 font-display font-semibold">{article.title}</p>

@@ -7,11 +7,13 @@ import ArticleCard from "@/components/ArticleCard";
 import EditorialImage from "@/components/EditorialImage";
 import Reveal from "@/components/Reveal";
 import { dateLabel, useContent } from "@/lib/ContentContext";
+import { ContentLoadingPage, ContentStatus } from "@/components/ContentStatus";
+import WordPressBody from "@/components/WordPressBody";
 import NotFound from "./NotFound";
 
 export default function Article() {
   const { slug } = useParams();
-  const { content } = useContent();
+  const { content, loading, error, isFallback } = useContent();
   const article = content.articles.find(a => a.slug === slug);
   const category = content.categories.find(c => c.id === article?.categoryId);
   const author = content.authors.find(a => a.id === article?.authorId);
@@ -43,6 +45,8 @@ export default function Article() {
     };
   }, [article, author?.name, author?.slug]);
 
+  if (loading) return <ContentLoadingPage />;
+  if (!article && error) return <><SiteHeader /><main className="mx-auto min-h-[70vh] max-w-7xl px-5 pb-20 pt-32 sm:px-8 sm:pt-40"><ContentStatus /><h1 className="font-display text-3xl font-bold">This story could not be loaded.</h1><Link to="/articles" className="mt-5 inline-block text-primary">Return to the journal</Link></main><SiteFooter /></>;
   if (!article) return <NotFound />;
   const related = content.articles.filter(a => a.slug !== article.slug && a.categoryId === article.categoryId)
     .concat(content.articles.filter(a => a.slug !== article.slug && a.categoryId !== article.categoryId)).slice(0, 3);
@@ -50,6 +54,7 @@ export default function Article() {
   return <>
     <SiteHeader />
     <main className="pt-[68px] sm:pt-20">
+      {error && <div className="mx-auto max-w-7xl px-5 pt-6 sm:px-8"><ContentStatus /></div>}
       <article key={article.slug}>
         <header className="article-intro mx-auto max-w-5xl px-5 pb-10 pt-10 sm:px-8 sm:pb-14 sm:pt-16">
           <Link to={`/category/${category?.slug}`} className="mb-9 inline-flex items-center gap-3 text-xs text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Back to {category?.name}</Link>
@@ -83,20 +88,20 @@ export default function Article() {
             <aside className="grid grid-cols-2 gap-6 rounded-2xl border border-border bg-card p-7 sm:grid-cols-4">
               <h2 className="sr-only">At a glance</h2>
               {article.specs.map((spec, index) => <div key={`${spec.label}-${index}`}><p className="mb-2 text-[10px] uppercase tracking-widest text-muted-foreground">{spec.label}</p><p className="font-display text-lg font-semibold">{spec.value}</p></div>)}
-              <p className="col-span-2 text-[10px] text-muted-foreground sm:col-span-4">Illustrative specifications for this sample editorial feature.</p>
+              {isFallback && <p className="col-span-2 text-[10px] text-muted-foreground sm:col-span-4">Illustrative specifications for this sample editorial feature.</p>}
             </aside>
           </Reveal>}
           <div className="space-y-7 font-serif text-lg leading-[1.85] text-foreground/85 sm:text-xl">
-            {article.body.map((paragraph, index) => <div key={index}>
+            {article.bodyHtml !== undefined ? <WordPressBody html={article.bodyHtml} pullQuote={article.pullQuote} /> : article.body.map((paragraph, index) => <div key={index}>
               <Reveal><p>{paragraph}</p></Reveal>
-              {index === 1 && <Reveal><blockquote className="my-12 border-l-2 border-primary py-2 pl-7 font-display text-2xl font-semibold leading-snug text-foreground sm:text-3xl">“{article.pullQuote}”</blockquote></Reveal>}
+              {index === 1 && article.pullQuote && <Reveal><blockquote className="my-12 border-l-2 border-primary py-2 pl-7 font-display text-2xl font-semibold leading-snug text-foreground sm:text-3xl">“{article.pullQuote}”</blockquote></Reveal>}
             </div>)}
           </div>
           <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-y border-border py-6">
             <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">An independent perspective</p>
             <Link to={`/category/${category?.slug}`} className="inline-flex items-center gap-2 text-xs hover:text-primary">More {category?.name} <ArrowUpRight className="h-4 w-4" /></Link>
           </div>
-          <p className="mt-5 text-xs leading-relaxed text-muted-foreground">This is a curated sample story for the MotorHearts editorial showcase. Names, experiences and specifications are illustrative.</p>
+          {isFallback && <p className="mt-5 text-xs leading-relaxed text-muted-foreground">This is a curated sample story for the MotorHearts editorial showcase. Names, experiences and specifications are illustrative.</p>}
         </div>
       </article>
       {related.length > 0 && <section className="mx-auto max-w-7xl px-5 pb-20 sm:px-8">

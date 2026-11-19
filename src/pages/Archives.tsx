@@ -6,9 +6,11 @@ import ArticleCard from "@/components/ArticleCard";
 import EditorialImage from "@/components/EditorialImage";
 import Reveal from "@/components/Reveal";
 import { useContent, type Story } from "@/lib/ContentContext";
+import { ContentLoadingPage, ContentStatus } from "@/components/ContentStatus";
 import NotFound from "./NotFound";
 
 function ArchiveFrame({ title, intro, children }: { title: string; intro: string; children: ReactNode }) {
+  const { loading } = useContent();
   useEffect(() => {
     document.title = `${title} — MotorHearts`;
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -23,7 +25,7 @@ function ArchiveFrame({ title, intro, children }: { title: string; intro: string
       <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.25em] text-primary">The journal</p>
       <h1 className="break-words font-display text-4xl font-bold tracking-tight sm:text-6xl">{title}</h1>
       <p className="mt-5 max-w-2xl leading-7 text-muted-foreground">{intro}</p>
-      <div className="mt-12">{children}</div>
+      <div className="mt-12"><ContentStatus />{!loading && children}</div>
     </main>
     <SiteFooter />
   </>;
@@ -39,10 +41,12 @@ function StoriesGrid({ stories, emptyMessage }: { stories: Story[]; emptyMessage
 
 export function CategoryArchive() {
   const { slug } = useParams();
-  const { content } = useContent();
+  const { content, loading, error } = useContent();
   const category = content.categories.find(item => item.slug === slug);
+  if (loading) return <ContentLoadingPage />;
+  if (!category && error) return <ArchiveFrame title="Category unavailable" intro="Please retry the WordPress connection.">{null}</ArchiveFrame>;
   if (!category) return <NotFound />;
-  const stories = content.articles.filter(story => story.categoryId === category.id).sort((first, second) => second.date.localeCompare(first.date));
+  const stories = content.articles.filter(story => story.categoryIds ? story.categoryIds.includes(category.id) : story.categoryId === category.id).sort((first, second) => second.date.localeCompare(first.date));
   return <ArchiveFrame title={category.name} intro={category.blurb}>
     <StoriesGrid stories={stories} emptyMessage="No stories in this category yet." />
   </ArchiveFrame>;
@@ -85,8 +89,10 @@ export function AuthorsIndex() {
 
 export function AuthorArchive() {
   const { slug } = useParams();
-  const { content } = useContent();
+  const { content, loading, error } = useContent();
   const author = content.authors.find(item => item.slug === slug);
+  if (loading) return <ContentLoadingPage />;
+  if (!author && error) return <ArchiveFrame title="Author unavailable" intro="Please retry the WordPress connection.">{null}</ArchiveFrame>;
   if (!author) return <NotFound />;
   const stories = content.articles.filter(article => article.authorId === author.id).sort((first, second) => second.date.localeCompare(first.date));
   return <ArchiveFrame title={author.name} intro={`${author.role} · ${author.bio}`}>

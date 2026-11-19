@@ -75,6 +75,14 @@ export default function EditorialImage({ src, alt, parallax = false, priority = 
     loading={priority ? "eager" : "lazy"}
     decoding="async"
     fetchPriority={priority ? "high" : "auto"}
+    onError={event => {
+      const image = event.currentTarget;
+      if (image.getAttribute("src") !== "/motorhearts-logo.png") {
+        image.removeAttribute("srcset");
+        image.src = "/motorhearts-logo.png";
+      }
+      props.onError?.(event);
+    }}
     className={`${parallax ? "editorial-parallax" : "editorial-image"} ${className}`}
   />;
 }

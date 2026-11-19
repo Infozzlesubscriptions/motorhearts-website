@@ -8,6 +8,7 @@ import Newsletter from "@/components/Newsletter";
 import Reveal from "@/components/Reveal";
 import EditorialImage from "@/components/EditorialImage";
 import { dateLabel, useContent } from "@/lib/ContentContext";
+import { ContentLoadingPage, ContentStatus } from "@/components/ContentStatus";
 
 function SectionHeading(
     {
@@ -38,7 +39,7 @@ function SectionHeading(
 
 export default function Index() {
     const {
-        content
+        content, loading, isFallback
     } = useContent();
 
     useEffect(() => {
@@ -52,10 +53,13 @@ export default function Index() {
 
     const byDate = [...content.articles].sort((first, second) => second.date.localeCompare(first.date));
     const hero = content.articles.find(article => article.hero) ?? byDate[0];
-    const featured = content.articles.filter(article => article.featured).slice(0, 3);
+    const selected = byDate.filter(article => article.featured).sort((first, second) => (first.featuredOrder ?? 0) - (second.featuredOrder ?? 0));
+    const featured = [...selected, ...byDate.filter(article => !article.featured)].slice(0, 3);
     const latest = byDate.slice(0, 4);
     const spotlight = content.articles.find(article => article.spotlight) ?? byDate[0];
     const guides = content.articles.filter(article => article.guide).slice(0, 3);
+
+    if (loading) return <ContentLoadingPage />;
 
     return (
         <>
@@ -68,7 +72,8 @@ export default function Index() {
                         className="mb-6 flex justify-end border-b border-border pb-4 text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:hidden">
                         <span className="shrink-0">Vol. 01</span>
                     </div>
-                    <div
+                    <ContentStatus />
+                    {hero ? <div
                         className="grid overflow-hidden rounded-2xl border border-border bg-card lg:min-h-[590px] lg:grid-cols-[0.78fr_1.22fr]">
                         <div
                             className="flex min-w-0 flex-col justify-center px-7 py-12 sm:px-12 lg:px-14 xl:px-16">
@@ -105,7 +110,7 @@ export default function Index() {
                                 </div>
                             </div>
                         </Link>
-                    </div>
+                    </div> : <div className="grid overflow-hidden rounded-2xl border border-border bg-card lg:min-h-[590px] lg:grid-cols-[0.78fr_1.22fr]"><div className="flex min-w-0 flex-col justify-center px-7 py-12 sm:px-12 lg:px-14 xl:px-16"><p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.24em] text-primary">MotorHearts journal</p><h1 className="font-display text-[clamp(2.25rem,3.5vw,4.5rem)] font-extrabold leading-[1.06] tracking-[-0.045em]">For the love of the drive.</h1><p className="mt-7 max-w-md text-sm leading-7 text-muted-foreground sm:text-base">Our first stories are on the way. Explore the worlds of MotorHearts below.</p><a href="#latest" className="mt-8 inline-flex w-fit items-center gap-6 rounded-full bg-foreground px-6 py-3.5 text-xs font-semibold text-background hover:bg-primary hover:text-white">Explore Articles <ArrowRight className="h-4 w-4" /></a></div><div className="flex min-h-[350px] items-center justify-center bg-background p-10 sm:min-h-[470px]"><img src="/motorhearts-logo.png" alt="MotorHearts" className="max-h-[380px] w-full object-contain" /></div></div>}
                 </section>
                 <section
                     className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-16"
@@ -115,12 +120,12 @@ export default function Index() {
                         title="Featured stories."
                         link="/articles"
                         linkLabel="All stories" />
-                    <div className="grid gap-9 lg:grid-cols-2">
+                    {featured.length ? <div className="grid gap-9 lg:grid-cols-2">
                         <ArticleCard article={featured[0]} size="large" />
                         <div className="grid content-start gap-8 lg:pt-2">{featured.slice(1).map(
                                 (article, index) => <ArticleCard key={article.slug} article={article} size="compact" index={index + 1} />
                             )}</div>
-                    </div>
+                    </div> : <p className="rounded-xl border border-border bg-card p-7 text-muted-foreground">Featured stories are on the way.</p>}
                 </section>
                 <section
                     className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-20"
@@ -158,9 +163,9 @@ export default function Index() {
                         title="Latest articles."
                         link="/articles"
                         linkLabel="View archive" />
-                    <div className="grid gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">{latest.map(
+                    {latest.length ? <div className="grid gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">{latest.map(
                             (article, index) => <ArticleCard key={article.slug} article={article} index={index} />
-                        )}</div>
+                        )}</div> : <p className="rounded-xl border border-border bg-card p-7 text-muted-foreground">No published stories yet. Check back soon.</p>}
                 </section>
                 <section
                     className="editorial-light mt-6 border-y border-border"
@@ -176,7 +181,7 @@ export default function Index() {
                             )}</div> : <p className="text-muted-foreground">New guides are on the way.</p>}
                     </div>
                 </section>
-                <Reveal
+                {spotlight && <Reveal
                     as="section"
                     className="mx-auto grid max-w-7xl gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[0.7fr_1.3fr] lg:items-center lg:py-24">
                     <div>
@@ -205,13 +210,13 @@ export default function Index() {
                             <p className="text-xs text-muted-foreground"><time dateTime={spotlight.date}>{dateLabel(spotlight.date)}</time>· {spotlight.readTime}min read</p>
                         </div>
                     </Link>
-                </Reveal>
+                </Reveal>}
                 <Reveal as="section" className="mx-auto max-w-7xl px-5 pb-16 sm:px-8 sm:pb-24">
                     <div className="rounded-2xl border border-border bg-card p-8 sm:p-12">
                         <p
                             className="mb-4 text-[10px] font-semibold uppercase tracking-[0.22em] text-primary">This is MotorHearts</p>
                         <h2 className="font-display text-3xl font-bold sm:text-4xl">Not just what you drive.<br /><span className="font-serif font-normal italic text-muted-foreground">Why you drive.</span></h2>
-                        <p className="mt-5 max-w-2xl text-sm leading-7 text-muted-foreground">MotorHearts is an independent editorial showcase exploring automotive culture across six worlds. The sample features are illustrative.</p>
+                        <p className="mt-5 max-w-2xl text-sm leading-7 text-muted-foreground">MotorHearts is an independent editorial showcase exploring automotive culture across six worlds.{isFallback && " The sample features are illustrative."}</p>
                         <Link
                             to="/about"
                             className="mt-5 inline-flex items-center gap-2 text-sm hover:text-primary">About MotorHearts <ArrowUpRight className="h-4 w-4" /></Link>
