@@ -1,13 +1,45 @@
 <?php
 /**
  * Plugin Name: MotorHearts Content
- * Description: Editorial homepage selections, category artwork, contributor profiles and public REST fields for the MotorHearts React website.
- * Version: 1.0.0
+ * Description: Editorial homepage selections, category artwork, contributor profiles and exact-origin REST CORS for the MotorHearts Vercel website.
+ * Version: 1.1.0
  * Requires at least: 6.0
  * Requires PHP: 7.4
  * License: GPL-2.0-or-later
  */
 if (!defined('ABSPATH')) { exit; }
+
+function mh_rest_cors($served, $result, $request, $server) {
+    foreach (array('Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials', 'Access-Control-Allow-Methods', 'Access-Control-Allow-Headers', 'Access-Control-Expose-Headers', 'Access-Control-Max-Age') as $header) {
+        header_remove($header);
+    }
+    header('Vary: Origin', false);
+    $origin = get_http_origin();
+    if (!$origin) { return $served; }
+
+    $site = wp_parse_url(home_url('/'));
+    $backend_origin = $site['scheme'] . '://' . $site['host'] . (isset($site['port']) ? ':' . $site['port'] : '');
+    if ($origin === $backend_origin) {
+        // Preserve WordPress's own authenticated, same-origin REST admin behavior.
+        return rest_send_cors_headers($served);
+    }
+
+    $public_route = preg_match('#^/wp/v2/(posts|categories)(?:/[0-9]+)?/?$#', $request->get_route());
+    if ($origin !== 'https://motorhearts-website.vercel.app' || !$public_route || !in_array($request->get_method(), array('GET', 'HEAD', 'OPTIONS'), true)) {
+        return $served;
+    }
+    $server->send_header('Access-Control-Allow-Origin', 'https://motorhearts-website.vercel.app');
+    $server->send_header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+    $server->send_header('Access-Control-Allow-Headers', 'Accept, Content-Type');
+    $server->send_header('Access-Control-Expose-Headers', 'X-WP-Total, X-WP-TotalPages, Link');
+    $server->send_header('Access-Control-Max-Age', '600');
+    return $served;
+}
+add_action('rest_api_init', function () {
+    // Replace WordPress's permissive origin reflection on REST responses only.
+    remove_filter('rest_pre_serve_request', 'rest_send_cors_headers');
+    add_filter('rest_pre_serve_request', 'mh_rest_cors', PHP_INT_MAX, 4);
+}, PHP_INT_MAX);
 
 function mh_specs($text) {
     $specs = array();
