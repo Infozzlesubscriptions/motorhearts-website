@@ -25,7 +25,6 @@ export default function SiteFooter() {
             <Link to="/about">About</Link>
             <Link to="/editorial-policy">Editorial policy</Link>
             <Link to="/privacy-policy">Privacy policy</Link>
-            <Link to="/editor">Local editor</Link>
             <Link to="/brand-concepts">Logo concepts</Link>
           </div>
         </div>

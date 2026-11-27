@@ -8,7 +8,8 @@ import Article from "./pages/Article";
 import NotFound from "./pages/NotFound";
 import Editor from "./pages/Editor";
 import InfoPage from "./pages/InfoPages";
-import { ArticlesArchive, AuthorArchive, AuthorsIndex, CategoryArchive, GuidesArchive } from "./pages/Archives";
+import { ArticlesArchive, AuthorArchive, AuthorsIndex, CategoryArchive } from "./pages/Archives";
+import PopularGuides from "./pages/PopularGuides";
 import { ContentProvider } from "./lib/ContentContext";
 import BrandIcons from "./components/BrandIcons";
 import BrandConcepts from "./pages/BrandConcepts";
@@ -20,7 +21,7 @@ const App = () => <QueryClientProvider client={queryClient}><TooltipProvider><Br
   <Route path="/article/:slug" element={<Article />} />
   <Route path="/category/:slug" element={<CategoryArchive />} />
   <Route path="/articles" element={<ArticlesArchive />} />
-  <Route path="/guides" element={<GuidesArchive />} />
+  <Route path="/guides" element={<PopularGuides />} />
   <Route path="/authors" element={<AuthorsIndex />} />
   <Route path="/author/:slug" element={<AuthorArchive />} />
   <Route path="/about" element={<InfoPage kind="about" />} />

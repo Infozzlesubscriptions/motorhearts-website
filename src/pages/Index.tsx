@@ -53,11 +53,10 @@ export default function Index() {
 
     const byDate = [...content.articles].sort((first, second) => second.date.localeCompare(first.date));
     const hero = content.articles.find(article => article.hero) ?? byDate[0];
-    const selected = byDate.filter(article => article.featured).sort((first, second) => (first.featuredOrder ?? 0) - (second.featuredOrder ?? 0));
-    const featured = [...selected, ...byDate.filter(article => !article.featured)].slice(0, 3);
     const latest = byDate.slice(0, 4);
     const spotlight = content.articles.find(article => article.spotlight) ?? byDate[0];
     const guides = content.articles.filter(article => article.guide).slice(0, 3);
+    const guideImage = guides[0]?.image ?? hero?.image;
 
     if (loading) return <ContentLoadingPage />;
 
@@ -113,19 +112,17 @@ export default function Index() {
                     </div> : <div className="grid overflow-hidden rounded-2xl border border-border bg-card lg:min-h-[590px] lg:grid-cols-[0.78fr_1.22fr]"><div className="flex min-w-0 flex-col justify-center px-7 py-12 sm:px-12 lg:px-14 xl:px-16"><p className="mb-6 text-[10px] font-semibold uppercase tracking-[0.24em] text-primary">MotorHearts journal</p><h1 className="font-display text-[clamp(2.25rem,3.5vw,4.5rem)] font-extrabold leading-[1.06] tracking-[-0.045em]">For the love of the drive.</h1><p className="mt-7 max-w-md text-sm leading-7 text-muted-foreground sm:text-base">Our first stories are on the way. Explore the worlds of MotorHearts below.</p><a href="#latest" className="mt-8 inline-flex w-fit items-center gap-6 rounded-full bg-foreground px-6 py-3.5 text-xs font-semibold text-background hover:bg-primary hover:text-white">Explore Articles <ArrowRight className="h-4 w-4" /></a></div><div className="flex min-h-[350px] items-center justify-center bg-background p-10 sm:min-h-[470px]"><img src="/motorhearts-logo.png" alt="MotorHearts" className="max-h-[380px] w-full object-contain" /></div></div>}
                 </section>
                 <section
-                    className="mx-auto max-w-7xl px-5 py-10 sm:px-8 sm:py-16"
-                    aria-label="Featured stories">
+                    id="latest"
+                    className="mx-auto max-w-7xl scroll-mt-24 px-5 py-10 sm:px-8 sm:py-16"
+                    aria-label="Latest articles">
                     <SectionHeading
-                        eyebrow="The edit"
-                        title="Featured stories."
+                        eyebrow="Fresh from the road"
+                        title="Latest articles."
                         link="/articles"
-                        linkLabel="All stories" />
-                    {featured.length ? <div className="grid gap-9 lg:grid-cols-2">
-                        <ArticleCard article={featured[0]} size="large" />
-                        <div className="grid content-start gap-8 lg:pt-2">{featured.slice(1).map(
-                                (article, index) => <ArticleCard key={article.slug} article={article} size="compact" index={index + 1} />
-                            )}</div>
-                    </div> : <p className="rounded-xl border border-border bg-card p-7 text-muted-foreground">Featured stories are on the way.</p>}
+                        linkLabel="View archive" />
+                    {latest.length ? <div className="grid gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">{latest.map(
+                            (article, index) => <ArticleCard key={article.slug} article={article} index={index} />
+                        )}</div> : <p className="rounded-xl border border-border bg-card p-7 text-muted-foreground">No published stories yet. Check back soon.</p>}
                 </section>
                 <section
                     className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-20"
@@ -154,32 +151,30 @@ export default function Index() {
                         </Reveal>)}
                     </div>
                 </section>
-                <section
-                    id="latest"
-                    className="mx-auto max-w-7xl scroll-mt-24 px-5 py-12 sm:px-8 sm:py-20"
-                    aria-label="Latest articles">
-                    <SectionHeading
-                        eyebrow="Fresh from the road"
-                        title="Latest articles."
-                        link="/articles"
-                        linkLabel="View archive" />
-                    {latest.length ? <div className="grid gap-x-7 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">{latest.map(
-                            (article, index) => <ArticleCard key={article.slug} article={article} index={index} />
-                        )}</div> : <p className="rounded-xl border border-border bg-card p-7 text-muted-foreground">No published stories yet. Check back soon.</p>}
-                </section>
-                <section
-                    className="editorial-light mt-6 border-y border-border"
-                    aria-label="Popular guides">
-                    <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-24">
-                        <SectionHeading
-                            eyebrow="Practical knowledge"
-                            title="Popular guides."
-                            link="/guides"
-                            linkLabel="All guides" />
-                        {guides.length ? <div className="grid gap-9 sm:grid-cols-2 lg:grid-cols-3">{guides.map(
-                                (article, index) => <ArticleCard key={article.slug} article={article} index={index} />
-                            )}</div> : <p className="text-muted-foreground">New guides are on the way.</p>}
-                    </div>
+                <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-20" aria-label="Explore our guides">
+                    <Reveal className="group relative isolate overflow-hidden rounded-2xl border border-border bg-card">
+                        {guideImage && <EditorialImage
+                            src={guideImage}
+                            alt=""
+                            width={1440}
+                            height={700}
+                            sizes="(min-width: 1280px) 1216px, 100vw"
+                            className="absolute inset-0 -z-20 h-full w-full object-cover opacity-50" />}
+                        <div className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,hsl(var(--background))_12%,hsl(var(--background)/.96)_44%,hsl(var(--background)/.45)_100%)]" />
+                        <div className="absolute inset-y-0 left-0 w-1 bg-primary" aria-hidden="true" />
+                        <div className="grid min-h-[360px] items-end p-8 sm:p-12 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-16 lg:p-16">
+                            <div className="max-w-2xl">
+                                <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-primary">The MotorHearts handbook</p>
+                                <h2 className="mt-4 font-display text-3xl font-bold leading-tight tracking-tight text-white sm:text-5xl">Know the machine.<br />Enjoy the journey.</h2>
+                                <p className="mt-5 max-w-xl text-sm leading-7 text-white/70 sm:text-base">Clear, considered advice for choosing, maintaining and getting more from the vehicles you love.</p>
+                            </div>
+                            <Link
+                                to="/guides"
+                                className="mt-8 inline-flex w-fit items-center gap-5 rounded-full bg-primary px-6 py-3.5 text-xs font-semibold text-white hover:bg-white hover:text-background lg:mt-0">
+                                Explore our guides <ArrowRight className="h-4 w-4" />
+                            </Link>
+                        </div>
+                    </Reveal>
                 </section>
                 {spotlight && <Reveal
                     as="section"
