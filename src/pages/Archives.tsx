@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import ArticleCard from "@/components/ArticleCard";
@@ -8,6 +8,8 @@ import Reveal from "@/components/Reveal";
 import { useContent, type Story } from "@/lib/ContentContext";
 import { ContentLoadingPage, ContentStatus } from "@/components/ContentStatus";
 import NotFound from "./NotFound";
+import { GUIDES_CATEGORY_SLUG, isGuideStory } from "@/lib/guides";
+import { isPublicCategory } from "@/lib/categories";
 
 function ArchiveFrame({ title, intro, children }: { title: string; intro: string; children: ReactNode }) {
   const { loading } = useContent();
@@ -44,9 +46,13 @@ export function CategoryArchive() {
   const { content, loading, error } = useContent();
   const category = content.categories.find(item => item.slug === slug);
   if (loading) return <ContentLoadingPage />;
+  if (slug === GUIDES_CATEGORY_SLUG) return <Navigate to="/guides" replace />;
   if (!category && error) return <ArchiveFrame title="Category unavailable" intro="Please retry the WordPress connection.">{null}</ArchiveFrame>;
-  if (!category) return <NotFound />;
-  const stories = content.articles.filter(story => story.categoryIds ? story.categoryIds.includes(category.id) : story.categoryId === category.id).sort((first, second) => second.date.localeCompare(first.date));
+  if (!category || !isPublicCategory(category)) return <NotFound />;
+  const stories = content.articles
+    .filter(story => !isGuideStory(story, content.categories))
+    .filter(story => story.categoryIds ? story.categoryIds.includes(category.id) : story.categoryId === category.id)
+    .sort((first, second) => second.date.localeCompare(first.date));
   return <ArchiveFrame title={category.name} intro={category.blurb}>
     <StoriesGrid stories={stories} emptyMessage="No stories in this category yet." />
   </ArchiveFrame>;
@@ -54,7 +60,7 @@ export function CategoryArchive() {
 
 export function GuidesArchive() {
   const { content } = useContent();
-  const stories = content.articles.filter(article => article.guide).sort((first, second) => second.date.localeCompare(first.date));
+  const stories = content.articles.filter(article => isGuideStory(article, content.categories)).sort((first, second) => second.date.localeCompare(first.date));
   return <ArchiveFrame title="Popular Guides" intro="Practical knowledge and considered advice for better days on the road.">
     <StoriesGrid stories={stories} emptyMessage="No guides are available yet." />
   </ArchiveFrame>;
@@ -62,7 +68,7 @@ export function GuidesArchive() {
 
 export function ArticlesArchive() {
   const { content } = useContent();
-  const stories = [...content.articles].sort((first, second) => second.date.localeCompare(first.date));
+  const stories = content.articles.filter(article => !isGuideStory(article, content.categories)).sort((first, second) => second.date.localeCompare(first.date));
   return <ArchiveFrame title="All articles" intro="Every story from the MotorHearts journal, in one place.">
     <StoriesGrid stories={stories} emptyMessage="No stories are available yet." />
   </ArchiveFrame>;

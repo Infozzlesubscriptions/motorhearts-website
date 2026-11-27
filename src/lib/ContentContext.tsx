@@ -2,18 +2,27 @@ import { createContext, useContext, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { articles as samples, categories as categoryDefaults } from "@/data/articles";
 import { FALLBACK_IMAGE, loadWordPress, WORDPRESS_URL } from "./wordpress";
+import { GUIDES_CATEGORY_SLUG } from "./guides";
 
 export type Category = { id: string; slug: string; name: string; blurb: string; image: string };
 export type Author = { id: string; slug: string; name: string; role: string; bio: string; image: string };
-export type Story = { slug: string; title: string; dek: string; categoryId: string; categoryIds?: string[]; image: string; authorId: string; date: string; readTime: number; pullQuote: string; body: string[]; bodyHtml?: string; wordpressId?: number; pluginFields?: boolean; featuredOrder?: number; specs: { label: string; value: string }[]; guide: boolean; featured: boolean; hero: boolean; spotlight: boolean };
+export type Story = { slug: string; title: string; dek: string; categoryId: string; categoryIds?: string[]; image: string; authorId: string; date: string; readTime: number; pullQuote: string; body: string[]; bodyHtml?: string; wordpressId?: number; pluginFields?: boolean; featuredOrder?: number; specs: { label: string; value: string }[]; featured: boolean; hero: boolean; spotlight: boolean };
 export type Signup = { email: string; consent: boolean; createdAt: string };
 export type SiteContent = { categories: Category[]; authors: Author[]; articles: Story[]; signups: Signup[] };
 
 const slugify = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const fallbackGuideIndexes = new Set([2, 4, 7]);
+const fallbackCategories: Category[] = [
+  ...categoryDefaults.map(category => ({ ...category, name: category.slug === "performance-tuning" ? "Performance & Tuning" : category.name, id: category.slug, image: samples.find(story => story.category === category.slug)?.image ?? FALLBACK_IMAGE })),
+  { id: GUIDES_CATEGORY_SLUG, slug: GUIDES_CATEGORY_SLUG, name: "Guides", blurb: "Practical knowledge and considered advice for better days on the road.", image: samples[2]?.image ?? FALLBACK_IMAGE },
+];
 const fallback: SiteContent = {
-  categories: categoryDefaults.map(category => ({ ...category, name: category.slug === "performance-tuning" ? "Performance & Tuning" : category.slug === "trailers" ? "Trailers & Transport" : category.name, id: category.slug, image: samples.find(story => story.category === category.slug)?.image ?? FALLBACK_IMAGE })),
+  categories: fallbackCategories,
   authors: Array.from(new Map(samples.map(story => [story.author, { id: slugify(story.author), slug: slugify(story.author), name: story.author, role: story.authorRole, bio: "A sample MotorHearts contributor.", image: "" }])).values()),
-  articles: samples.map((story, index) => ({ ...story, categoryId: story.category, authorId: slugify(story.author), specs: story.specs ?? [], guide: [2, 4, 7].includes(index), featured: index < 3, hero: index === 0, spotlight: index === 3 })),
+  articles: samples.map((story, index) => {
+    const guide = fallbackGuideIndexes.has(index);
+    return { ...story, categoryId: guide ? GUIDES_CATEGORY_SLUG : story.category, categoryIds: [guide ? GUIDES_CATEGORY_SLUG : story.category], authorId: slugify(story.author), specs: story.specs ?? [], featured: !guide && index < 3, hero: index === 0, spotlight: index === 3 };
+  }),
   signups: [],
 };
 const SIGNUPS_KEY = "motorhearts-local-signups-v1";

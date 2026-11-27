@@ -1,10 +1,10 @@
 export const categories = [
-  { slug: "cars", name: "Cars", blurb: "Road tests, launches and the machines that define an era." },
   { slug: "motorcycles", name: "Motorcycles", blurb: "Two wheels, open roads and the art of balance." },
   { slug: "electric-bikes", name: "Electric Bikes", blurb: "The quiet revolution reshaping how cities move." },
   { slug: "classic-cars", name: "Classic Cars", blurb: "Restorations, provenance and timeless design." },
   { slug: "performance-tuning", name: "Performance Tuning", blurb: "Engineering, setup and the pursuit of the perfect lap." },
-  { slug: "trailers", name: "Trailers", blurb: "Towing, touring and taking the journey further." },
+  { slug: "trailers-towing", name: "Trailers & Towing", blurb: "Towing, touring and taking the journey further." },
+  { slug: "chauffeur-luxury-transport", name: "Chauffeur & Luxury Transport", blurb: "Refined travel, professional driving and exceptional journeys." },
 ] as const;
 
 export type CategorySlug = (typeof categories)[number]["slug"];
@@ -32,7 +32,7 @@ export const articles: Article[] = [
     slug: "alpine-passes-in-the-new-gt-coupe",
     title: "Above the Clouds: Three Alpine Passes in the New GT Coupé",
     dek: "Six hundred horsepower, eleven hundred hairpins and one perfect morning on the Stelvio. We went looking for the limits of grand touring.",
-    category: "cars",
+    category: "chauffeur-luxury-transport",
     image: img("photo-1503376780353-7e6692767b70", 2400),
     author: "Elena Marchetti",
     authorRole: "Road Test Editor",
@@ -157,7 +157,7 @@ export const articles: Article[] = [
     slug: "the-lakeside-tow",
     title: "The Lakeside Tow: Living Well on the Road",
     dek: "Lightweight aluminium trailers and capable SUVs are rewriting the rules of adventure travel. We spent a week finding out how far comfort can go.",
-    category: "trailers",
+    category: "trailers-towing",
     image: img("photo-1523987355523-c7b5b0dd90a7"),
     author: "Sophie Carrell",
     authorRole: "Travel & Touring Editor",
@@ -182,7 +182,7 @@ export const articles: Article[] = [
     slug: "the-electric-hypercar-question",
     title: "Silence at Speed: The Electric Hypercar Question",
     dek: "They are faster than anything before them. But can a car without a soundtrack still stir the soul?",
-    category: "cars",
+    category: "performance-tuning",
     image: img("photo-1492144534655-ae79c964c9d7"),
     author: "Elena Marchetti",
     authorRole: "Road Test Editor",

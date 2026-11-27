@@ -2,12 +2,13 @@
 /**
  * Plugin Name: MotorHearts Content
  * Description: Editorial homepage selections, category artwork, contributor profiles and exact-origin REST CORS for the MotorHearts Vercel website.
- * Version: 1.1.0
+ * Version: 1.3.0
  * Requires at least: 6.0
  * Requires PHP: 7.4
  * License: GPL-2.0-or-later
  */
 if (!defined('ABSPATH')) { exit; }
+define('MH_CONTENT_VERSION', '1.3.0');
 
 function mh_rest_cors($served, $result, $request, $server) {
     foreach (array('Access-Control-Allow-Origin', 'Access-Control-Allow-Credentials', 'Access-Control-Allow-Methods', 'Access-Control-Allow-Headers', 'Access-Control-Expose-Headers', 'Access-Control-Max-Age') as $header) {
@@ -54,7 +55,7 @@ function mh_specs($text) {
 function mh_post_fields($object) {
     $id = $object['id'];
     $data = array();
-    foreach (array('hero', 'spotlight', 'featured', 'guide') as $key) { $data[$key] = (bool) get_post_meta($id, '_mh_' . $key, true); }
+    foreach (array('hero', 'spotlight', 'featured') as $key) { $data[$key] = (bool) get_post_meta($id, '_mh_' . $key, true); }
     foreach (array('dek', 'pull_quote') as $key) { $data[$key] = (string) get_post_meta($id, '_mh_' . $key, true); }
     foreach (array('read_time', 'primary_category', 'featured_order') as $key) { $data[$key] = (int) get_post_meta($id, '_mh_' . $key, true); }
     $data['specs'] = mh_specs((string) get_post_meta($id, '_mh_specs', true));
@@ -67,25 +68,63 @@ add_action('rest_api_init', function () {
 });
 add_action('init', function () { add_post_type_support('post', array('thumbnail', 'excerpt')); });
 add_action('after_setup_theme', function () { add_theme_support('post-thumbnails'); });
-register_activation_hook(__FILE__, function () {
+function mh_ensure_categories() {
     $categories = array(
-        'cars' => array('Cars', 'Road tests, launches and the machines that define an era.'),
         'motorcycles' => array('Motorcycles', 'Two wheels, open roads and the art of balance.'),
         'electric-bikes' => array('Electric Bikes', 'The quiet revolution reshaping how cities move.'),
         'classic-cars' => array('Classic Cars', 'Restorations, provenance and timeless design.'),
         'performance-tuning' => array('Performance & Tuning', 'Engineering, setup and the pursuit of the perfect lap.'),
-        'trailers' => array('Trailers & Transport', 'Towing, touring and taking the journey further.')
+        'trailers-towing' => array('Trailers & Towing', 'Towing, touring and taking the journey further.'),
+        'chauffeur-luxury-transport' => array('Chauffeur & Luxury Transport', 'Refined travel, professional driving and exceptional journeys.'),
+        'guides' => array('Guides', 'Practical knowledge and considered advice for better days on the road.')
     );
     foreach ($categories as $slug => $values) {
         if (!get_term_by('slug', $slug, 'category')) { wp_insert_term($values[0], 'category', array('slug' => $slug, 'description' => $values[1])); }
     }
+}
+function mh_migrate_category($old_slugs, $new_slug, $name, $description) {
+    $target = get_term_by('slug', $new_slug, 'category');
+    foreach ($old_slugs as $old_slug) {
+        $old = get_term_by('slug', $old_slug, 'category');
+        if (!$old || ($target && $old->term_id === $target->term_id)) { continue; }
+        if (!$target) {
+            $updated = wp_update_term($old->term_id, 'category', array('slug' => $new_slug, 'name' => $name, 'description' => $description));
+            if (!is_wp_error($updated)) { $target = get_term($updated['term_id'], 'category'); }
+            continue;
+        }
+        $posts = get_posts(array('post_type' => 'post', 'post_status' => 'any', 'posts_per_page' => -1, 'fields' => 'ids', 'category' => $old->term_id));
+        foreach ($posts as $post_id) { wp_set_post_categories($post_id, array((int) $target->term_id), true); }
+        wp_delete_term($old->term_id, 'category');
+    }
+}
+function mh_prepare_categories() {
+    mh_migrate_category(array('cars'), 'chauffeur-luxury-transport', 'Chauffeur & Luxury Transport', 'Refined travel, professional driving and exceptional journeys.');
+    mh_migrate_category(array('trailers', 'trailers-transport'), 'trailers-towing', 'Trailers & Towing', 'Towing, touring and taking the journey further.');
+    mh_ensure_categories();
+}
+function mh_activate() {
+    mh_prepare_categories();
+}
+register_activation_hook(__FILE__, 'mh_activate');
+add_action('admin_init', function () {
+    if (get_option('mh_content_version') === MH_CONTENT_VERSION) { return; }
+    mh_prepare_categories();
+    $guides = get_term_by('slug', 'guides', 'category');
+    if ($guides) {
+        $legacy_guides = get_posts(array('post_type' => 'post', 'post_status' => 'any', 'posts_per_page' => -1, 'fields' => 'ids', 'meta_key' => '_mh_guide', 'meta_value' => '1'));
+        foreach ($legacy_guides as $post_id) {
+            wp_set_post_categories($post_id, array((int) $guides->term_id), true);
+            delete_post_meta($post_id, '_mh_guide');
+        }
+    }
+    update_option('mh_content_version', MH_CONTENT_VERSION);
 });
 
 add_action('add_meta_boxes', function () { add_meta_box('mh-editorial', 'MotorHearts Editorial', 'mh_post_box', 'post', 'normal', 'high'); });
 function mh_post_box($post) {
     wp_nonce_field('mh_save_post', 'mh_post_nonce');
     echo '<p>Choose how this story appears on the React website. Publish or update the post to save. Only published posts are displayed.</p>';
-    foreach (array('hero' => 'Homepage cover story (one published story)', 'spotlight' => 'Editorial spotlight (one published story)', 'featured' => 'Featured story', 'guide' => 'Popular guide') as $key => $label) {
+    foreach (array('hero' => 'Homepage cover story (one published story)', 'spotlight' => 'Editorial spotlight (one published story)', 'featured' => 'Featured story') as $key => $label) {
         echo '<p><label><input type="checkbox" name="mh_' . esc_attr($key) . '" value="1" ' . checked(get_post_meta($post->ID, '_mh_' . $key, true), '1', false) . '> ' . esc_html($label) . '</label></p>';
     }
     foreach (array('dek' => 'Dek / summary (optional; otherwise uses the WordPress excerpt)', 'pull_quote' => 'Pull quote (optional)') as $key => $label) {
@@ -105,7 +144,7 @@ function mh_post_box($post) {
 }
 add_action('save_post_post', function ($id) {
     if (!isset($_POST['mh_post_nonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['mh_post_nonce'])), 'mh_save_post') || !current_user_can('edit_post', $id) || wp_is_post_autosave($id) || wp_is_post_revision($id)) { return; }
-    foreach (array('hero', 'spotlight', 'featured', 'guide') as $key) {
+    foreach (array('hero', 'spotlight', 'featured') as $key) {
         $value = isset($_POST['mh_' . $key]) ? '1' : '';
         update_post_meta($id, '_mh_' . $key, $value);
     }

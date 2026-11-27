@@ -84,7 +84,7 @@ export async function loadWordPress(signal: AbortSignal): Promise<SiteContent> {
         image: imageUrl(post._embedded?.["wp:featuredmedia"]?.[0]?.source_url, categories.find(category => category.id === categoryId)?.image ?? FALLBACK_IMAGE),
         authorId: id, date: post.date.slice(0, 10), readTime: Number(meta.read_time) > 0 ? Math.ceil(Number(meta.read_time)) : Math.max(1, Math.ceil(text.split(/\s+/).filter(Boolean).length / 220)),
         pullQuote: typeof meta.pull_quote === "string" ? plainText(meta.pull_quote) : "", body: [], bodyHtml: post.content.rendered,
-        specs: specs.success ? specs.data.filter(spec => spec.label && spec.value) : [], guide: meta.guide === true, featured: meta.featured === true || post.sticky,
+        specs: specs.success ? specs.data.filter(spec => spec.label && spec.value) : [], featured: meta.featured === true || post.sticky,
         hero: meta.hero === true, spotlight: meta.spotlight === true, featuredOrder: Number(meta.featured_order) || 0,
       };
     });

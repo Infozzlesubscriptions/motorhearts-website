@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useContent } from "@/lib/ContentContext";
 import Logo from "./Logo";
+import { isPublicCategory } from "@/lib/categories";
 
 export default function SiteFooter() {
   const { content } = useContent();
@@ -16,7 +17,7 @@ export default function SiteFooter() {
           <div className="grid grid-cols-2 gap-3 text-sm">
             <Link to="/">Home</Link><Link to="/articles">All articles</Link>
             <Link to="/guides">Guides</Link><Link to="/authors">Authors</Link>
-            {content.categories.map(c => <Link key={c.id} to={`/category/${c.slug}`}>{c.name}</Link>)}
+            {content.categories.filter(isPublicCategory).map(c => <Link key={c.id} to={`/category/${c.slug}`}>{c.name}</Link>)}
           </div>
         </div>
         <div>

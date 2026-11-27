@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { Input } from "@/components/ui/input";
 import { useContent } from "@/lib/ContentContext";
 import Logo from "./Logo";
+import { isPublicCategory } from "@/lib/categories";
 
 export default function SiteHeader() {
   const { content, loading } = useContent();
@@ -50,7 +51,7 @@ export default function SiteHeader() {
 
   const sections = [
     { to: "/", name: "Home" },
-    ...content.categories.map(category => ({ to: `/category/${category.slug}`, name: category.name })),
+    ...content.categories.filter(isPublicCategory).map(category => ({ to: `/category/${category.slug}`, name: category.name })),
     { to: "/guides", name: "Guides" },
   ];
 

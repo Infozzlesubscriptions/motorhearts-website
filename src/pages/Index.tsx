@@ -9,6 +9,8 @@ import Reveal from "@/components/Reveal";
 import EditorialImage from "@/components/EditorialImage";
 import { dateLabel, useContent } from "@/lib/ContentContext";
 import { ContentLoadingPage, ContentStatus } from "@/components/ContentStatus";
+import { isGuideStory } from "@/lib/guides";
+import { isPublicCategory } from "@/lib/categories";
 
 function SectionHeading(
     {
@@ -51,12 +53,12 @@ export default function Index() {
         });
     }, []);
 
-    const byDate = [...content.articles].sort((first, second) => second.date.localeCompare(first.date));
-    const hero = content.articles.find(article => article.hero) ?? byDate[0];
+    const homepageArticles = content.articles.filter(article => !isGuideStory(article, content.categories));
+    const homepageCategories = content.categories.filter(isPublicCategory);
+    const byDate = [...homepageArticles].sort((first, second) => second.date.localeCompare(first.date));
+    const hero = homepageArticles.find(article => article.hero) ?? byDate[0];
     const latest = byDate.slice(0, 4);
-    const spotlight = content.articles.find(article => article.spotlight) ?? byDate[0];
-    const guides = content.articles.filter(article => article.guide).slice(0, 3);
-    const guideImage = guides[0]?.image ?? hero?.image;
+    const spotlight = homepageArticles.find(article => article.spotlight) ?? byDate[0];
 
     if (loading) return <ContentLoadingPage />;
 
@@ -129,7 +131,7 @@ export default function Index() {
                     aria-label="Explore categories">
                     <SectionHeading eyebrow="Six worlds, one passion" title="Explore categories." />
                     <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                        {content.categories.map((category, index) => <Reveal key={category.id} delay={(index % 3) * 70}>
+                        {homepageCategories.map((category, index) => <Reveal key={category.id} delay={(index % 3) * 70}>
                             <Link
                                 to={`/category/${category.slug}`}
                                 className="group relative block aspect-[16/10] overflow-hidden rounded-2xl border border-border bg-card transition-colors hover:border-foreground/40">
@@ -153,8 +155,8 @@ export default function Index() {
                 </section>
                 <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-20" aria-label="Explore our guides">
                     <Reveal className="group relative isolate overflow-hidden rounded-2xl border border-border bg-card">
-                        {guideImage && <EditorialImage
-                            src={guideImage}
+                        {hero?.image && <EditorialImage
+                            src={hero.image}
                             alt=""
                             width={1440}
                             height={700}

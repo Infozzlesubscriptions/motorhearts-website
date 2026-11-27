@@ -10,6 +10,7 @@ import { dateLabel, useContent } from "@/lib/ContentContext";
 import { ContentLoadingPage, ContentStatus } from "@/components/ContentStatus";
 import WordPressBody from "@/components/WordPressBody";
 import NotFound from "./NotFound";
+import { isGuideStory } from "@/lib/guides";
 
 export default function Article() {
   const { slug } = useParams();
@@ -48,8 +49,12 @@ export default function Article() {
   if (loading) return <ContentLoadingPage />;
   if (!article && error) return <><SiteHeader /><main className="mx-auto min-h-[70vh] max-w-7xl px-5 pb-20 pt-32 sm:px-8 sm:pt-40"><ContentStatus /><h1 className="font-display text-3xl font-bold">This story could not be loaded.</h1><Link to="/articles" className="mt-5 inline-block text-primary">Return to the journal</Link></main><SiteFooter /></>;
   if (!article) return <NotFound />;
-  const related = content.articles.filter(a => a.slug !== article.slug && a.categoryId === article.categoryId)
-    .concat(content.articles.filter(a => a.slug !== article.slug && a.categoryId !== article.categoryId)).slice(0, 3);
+  const guide = isGuideStory(article, content.categories);
+  const articlePool = content.articles.filter(story => isGuideStory(story, content.categories) === guide);
+  const archiveHref = guide ? "/guides" : `/category/${category?.slug}`;
+  const archiveLabel = guide ? "Guides" : category?.name;
+  const related = articlePool.filter(a => a.slug !== article.slug && a.categoryId === article.categoryId)
+    .concat(articlePool.filter(a => a.slug !== article.slug && a.categoryId !== article.categoryId)).slice(0, 3);
 
   return <>
     <SiteHeader />
@@ -57,9 +62,9 @@ export default function Article() {
       {error && <div className="mx-auto max-w-7xl px-5 pt-6 sm:px-8"><ContentStatus /></div>}
       <article key={article.slug}>
         <header className="article-intro mx-auto max-w-5xl px-5 pb-10 pt-10 sm:px-8 sm:pb-14 sm:pt-16">
-          <Link to={`/category/${category?.slug}`} className="mb-9 inline-flex items-center gap-3 text-xs text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Back to {category?.name}</Link>
+          <Link to={archiveHref} className="mb-9 inline-flex items-center gap-3 text-xs text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" /> Back to {archiveLabel}</Link>
           <div className="mb-5 flex flex-wrap items-center gap-4 text-[10px] font-semibold uppercase tracking-[0.22em]">
-            <Link to={`/category/${category?.slug}`} className="text-primary">{category?.name}</Link>
+            <Link to={archiveHref} className="text-primary">{archiveLabel}</Link>
             <span className="h-px w-7 bg-border" aria-hidden="true" />
             <span className="text-muted-foreground">{article.readTime} min read</span>
           </div>
@@ -99,7 +104,7 @@ export default function Article() {
           </div>
           <div className="mt-12 flex flex-wrap items-center justify-between gap-4 border-y border-border py-6">
             <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">An independent perspective</p>
-            <Link to={`/category/${category?.slug}`} className="inline-flex items-center gap-2 text-xs hover:text-primary">More {category?.name} <ArrowUpRight className="h-4 w-4" /></Link>
+            <Link to={archiveHref} className="inline-flex items-center gap-2 text-xs hover:text-primary">More {archiveLabel} <ArrowUpRight className="h-4 w-4" /></Link>
           </div>
           {isFallback && <p className="mt-5 text-xs leading-relaxed text-muted-foreground">This is a curated sample story for the MotorHearts editorial showcase. Names, experiences and specifications are illustrative.</p>}
         </div>

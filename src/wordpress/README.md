@@ -35,7 +35,7 @@ The app also defaults to this exact backend when the variable is absent. Remove 
 6. Check that Plugins shows MotorHearts Content version 1.1.0 as active. This version includes the production Vercel CORS policy.
 7. Clear any WordPress/CDN REST-response cache, then return to the Vercel /editor page and click Refresh WordPress content.
 
-Requires WordPress 6.0+ and PHP 7.4+. Activation creates the six original MotorHearts category slugs only if missing; it does not overwrite existing categories, posts, artwork or the React design. A fresh install of WordPress alone is not an installation of this plugin.
+Requires WordPress 6.0+ and PHP 7.4+. Activation creates the six MotorHearts publication categories and the separate Guides category only if missing. Plugin updates migrate the previous Cars and trailer categories to their new names while preserving post assignments and artwork. A fresh install of WordPress alone is not an installation of this plugin.
 
 ## Secure CORS policy
 
@@ -64,18 +64,18 @@ Open the MotorHearts Editorial panel beneath the WordPress post editor. If hidde
 - Homepage cover story: selects the main hero. Checking this on a published story clears it on other published stories.
 - Editorial spotlight: selects the editorial spotlight, also exclusive among published posts.
 - Featured story: includes the story in the homepage edit. Featured order is ascending (lower first); ties use newest first. The homepage shows up to three and fills remaining slots with latest stories.
-- Popular guide: includes the post on the homepage guides section and /guides.
+- Guides are managed through the standard Guides category. Assign a post to Guides to show it only on /guides, not in homepage or Blog feeds.
 - Dek / summary: optional override of the WordPress excerpt.
 - Pull quote: optional quotation inserted after the second body block.
 - Reading time: minutes; zero calculates automatically at 220 words/minute.
-- Primary category: sets the article/card label and back link; also assign it in the standard Categories panel. Stories appear in all their assigned category archives.
+- Primary category: sets the article/card label and back link; also assign it in the standard Categories panel. Guide posts remain exclusive to the Guides section.
 - Specifications: optional lines such as Power | 612 hp. With no valid pairs, the specification panel is hidden.
 
 No minimum number of posts or selections is required. If hero or spotlight is not chosen, the newest post is used. The design and animations are unchanged; these fields select content, not a new theme.
 
 ## Category images
 
-Go to Posts → Categories. Edit the category name, slug and Description. Under MotorHearts category image, click Choose image to select a Media Library image or enter an HTTPS image URL, then save. These values drive category tiles, introductions and navigation. The six original categories retain their original order; additional WordPress categories also appear. Rename/delete unused categories in WordPress as appropriate.
+Go to Posts → Categories. Edit the category name, slug and Description. Under MotorHearts category image, click Choose image to select a Media Library image or enter an HTTPS image URL, then save. These values drive category tiles, introductions and navigation. The six publication categories retain their configured order; Guides remains available only through the dedicated Guides links.
 
 ## Contributors
 
